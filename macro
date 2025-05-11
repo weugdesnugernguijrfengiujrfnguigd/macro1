@@ -1,0 +1,43 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local camera = workspace.CurrentCamera
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+
+local enabled = false -- Macro starts off disabled
+
+-- Function to update the character's facing direction
+local function updateCharacterFacing()
+    if enabled and character and character.PrimaryPart then
+        local cameraCFrame = camera.CFrame
+        local lookAtPosition = cameraCFrame.Position + cameraCFrame.LookVector * 100 -- 100 studs ahead
+        lookAtPosition = Vector3.new(lookAtPosition.X, character.PrimaryPart.Position.Y, lookAtPosition.Z)
+        character:SetPrimaryPartCFrame(CFrame.new(character.PrimaryPart.Position, lookAtPosition))
+    end
+end
+
+-- Update every frame
+runService.RenderStepped:Connect(updateCharacterFacing)
+
+-- Update the character reference on respawn
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    character:WaitForChild("PrimaryPart")
+end)
+
+-- Keybind: Hold the macro with the X key
+local keybind = Enum.KeyCode.X
+
+userInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == keybind then
+        enabled = true
+    end
+end)
+
+userInputService.InputEnded:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == keybind then
+        enabled = false
+    end
+end)
